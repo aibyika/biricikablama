@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Baharın Doğuşu 🌸</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300&display=swap');
+
+        * {
+            box-sizing: border-box;
+            touch-action: manipulation; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            margin: 0;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(to bottom, #fff5f8 0%, #ffebee 100%);
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        #ui-container {
+            position: absolute;
+            top: 5vh;
+            width: 90%;
+            text-align: center;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        h1 {
+            font-family: 'Dancing Script', cursive;
+            color: #880e4f;
+            font-size: clamp(1.8rem, 8vw, 3.5rem);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        #instruction {
+            color: #d81b60;
+            font-size: clamp(0.8rem, 3vw, 1.1rem);
+            margin-top: 10px;
+            background: rgba(255, 255, 255, 0.5);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        .stage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 5vh;
+        }
+
+        .tree-wrapper {
+            position: relative;
+            width: 90vw;
+            max-width: 500px;
+            height: 70vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        #sakura-tree {
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #4e342e;
+            stroke-width: 12;
+            stroke-linecap: round;
+            z-index: 5;
+        }
+
+        #grass-field-container {
+            position: absolute;
+            bottom: -5px;
+            width: 100%;
+            height: 60px;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+        }
+
+        .grass-blade {
+            position: absolute;
+            width: 3px;
+            height: 40px;
+            background: #a5d6a7;
+            border-radius: 5px 5px 0 0;
+            filter: blur(0.5px);
+            opacity: 0;
+            transform: scaleY(0) rotate(var(--rot));
+            transform-origin: bottom center;
+            transition: transform 1s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.5s ease;
+        }
+
+        .purple-flower-wrapper {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            opacity: 0;
+            z-index: 10;
+            transition: opacity 1s ease;
+        }
+
+        .flower-petal {
+            position: absolute;
+            width: 5px;
+            height: 8px;
+            background: #9c27b0;
+            border-radius: 50% 50% 0 0;
+            transform-origin: bottom center;
+        }
+        .p1 { transform: rotate(0deg) translate(0, -2px); }
+        .p2 { transform: rotate(120deg) translate(0, -2px); background: #ba68c8; }
+        .p3 { transform: rotate(240deg) translate(0, -2px); }
+
+        .petal {
+            position: absolute;
+            width: clamp(10px, 3vw, 15px);
+            height: clamp(14px, 4vw, 20px);
+            background: radial-gradient(circle at 35% 35%, #fff, #ff80ab 60%, #f48fb1);
+            border-radius: 80% 10% 80% 10% / 80% 10% 80% 10%;
+            opacity: 0;
+            z-index: 10;
+            animation: bloom 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        @keyframes bloom {
+            from { transform: scale(0) rotate(-45deg); opacity: 0; }
+            to { transform: scale(1) rotate(var(--rot)); opacity: 0.95; }
+        }
+
+        .falling-petal {
+            position: absolute;
+            width: 12px;
+            height: 16px;
+            background: #f48fb1;
+            border-radius: 80% 10% 80% 10%;
+            z-index: 100;
+            pointer-events: none;
+            animation: fall linear forwards;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-5vh) rotate(0deg); opacity: 1; }
+            100% { transform: translateY(105vh) translateX(var(--tx)) rotate(720deg); opacity: 0; }
+        }
+
+        #final-msg {
+            position: absolute;
+            width: 90%;
+            font-family: 'Dancing Script', cursive;
+            font-size: clamp(2rem, 10vw, 3.5rem);
+            color: #ad1457;
+            text-align: center;
+            opacity: 0;
+            display: none;
+            z-index: 200;
+            text-shadow: 0 0 20px white;
+            transition: opacity 2s;
+        }
+    </style>
+</head>
+<body onclick="handleAction(event)">
+
+    <div id="ui-container">
+        <h1>Mutlu Yıllar Canım Ablam</h1>
+        <div id="instruction">Ekrana dokunarak baharı getir... 🌸</div>
+    </div>
+
+    <div id="final-msg">İyi ki doğdun abla! <br> Her günün bahar tadında olsun.</div>
+
+    <div class="stage">
+        <div class="tree-wrapper" id="canvas">
+            <svg id="sakura-tree" viewBox="0 0 500 600" preserveAspectRatio="xMidYMid meet">
+                <path d="M250,580 Q250,450 250,350" />
+                <path d="M250,350 Q150,300 80,200" stroke-width="8" /> 
+                <path d="M250,350 Q350,300 420,200" stroke-width="8" /> 
+                <path d="M250,350 Q250,200 300,100" stroke-width="6" /> 
+                <path d="M120,250 Q60,250 30,220" stroke-width="4" /> 
+                <path d="M380,250 Q440,250 470,220" stroke-width="4" /> 
+                <path d="M270,180 Q320,150 350,80" stroke-width="4" /> 
+                <path d="M230,180 Q180,150 150,80" stroke-width="4" /> 
+            </svg>
+            <div id="grass-field-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let clicks = 0;
+        const max = 30;
+        const canvas = document.getElementById('canvas');
+        const grassContainer = document.getElementById('grass-field-container');
+        
+        function initGrass() {
+            for(let i=0; i<40; i++) {
+                const gb = document.createElement('div');
+                gb.className = 'grass-blade';
+                gb.id = `grass-${i}`;
+                gb.style.left = (Math.random() * 100) + '%';
+                gb.style.height = (30 + Math.random() * 25) + 'px';
+                gb.style.setProperty('--rot', (Math.random() * 20 - 10) + 'deg');
+                grassContainer.appendChild(gb);
+            }
+        }
+        initGrass();
+
+        const branchZones = [
+            {x: [30, 70], y: [15, 45]}, 
+            {x: [10, 40], y: [30, 50]}, 
+            {x: [60, 90], y: [30, 50]}, 
+            {x: [20, 80], y: [10, 30]}, 
+            {x: [40, 60], y: [45, 65]}
+        ];
+
+        function handleAction(e) {
+            if (clicks >= max) return;
+            clicks++;
+
+            if (clicks <= 15) {
+                const gb = document.getElementById(`grass-${clicks-1}`);
+                const gb2 = document.getElementById(`grass-${clicks+14}`);
+                if (gb) { gb.style.opacity = '0.9'; gb.style.transform = `scaleY(1) rotate(${Math.random()*10-5}deg)`; }
+                if (gb2) { gb2.style.opacity = '0.9'; gb2.style.transform = `scaleY(1) rotate(${Math.random()*10-5}deg)`; }
+            }
+
+            if (clicks > 10 && clicks <= 22 && Math.random() > 0.4) {
+                spawnRealPurpleFlower();
+            }
+            
+            for (let i = 0; i < 10; i++) {
+                spawnPetal();
+            }
+
+            if (clicks === max) startFinal();
+        }
+
+        function spawnPetal() {
+            const p = document.createElement('div');
+            p.className = 'petal';
+            const zone = branchZones[Math.floor(Math.random() * branchZones.length)];
+            const xPercent = Math.random() * (zone.x[1] - zone.x[0]) + zone.x[0];
+            const yPercent = Math.random() * (zone.y[1] - zone.y[0]) + zone.y[0];
+            p.style.left = xPercent + '%';
+            p.style.top = yPercent + '%';
+            p.style.setProperty('--rot', Math.random() * 360 + 'deg');
+            canvas.appendChild(p);
+        }
+
+        function spawnRealPurpleFlower() {
+            const pfw = document.createElement('div');
+            pfw.className = 'purple-flower-wrapper';
+            for(let i=1; i<=3; i++) {
+                const petal = document.createElement('div');
+                petal.className = `flower-petal p${i}`;
+                pfw.appendChild(petal);
+            }
+            pfw.style.left = (15 + Math.random() * 70) + '%';
+            pfw.style.bottom = (5 + Math.random() * 20) + 'px';
+            pfw.style.transform = `scale(${0.7 + Math.random() * 0.5})`;
+            grassContainer.appendChild(pfw);
+            setTimeout(() => pfw.style.opacity = '1', 50);
+        }
+
+        function startFinal() {
+            document.getElementById('ui-container').style.opacity = '0';
+            setTimeout(() => {
+                const msg = document.getElementById('final-msg');
+                msg.style.display = 'block';
+                setTimeout(() => msg.style.opacity = '1', 100);
+            }, 1000);
+            setInterval(createFallingPetal, 150);
+        }
+
+        function createFallingPetal() {
+            const fp = document.createElement('div');
+            fp.className = 'falling-petal';
+            fp.style.left = Math.random() * 100 + 'vw';
+            fp.style.setProperty('--tx', (Math.random() * 100 - 50) + 'px');
+            const duration = Math.random() * 3 + 4;
+            fp.style.animationDuration = duration + 's';
+            document.body.appendChild(fp);
+            setTimeout(() => fp.remove(), duration * 1000);
+        }
+    </script>
+</body>
+</html>
